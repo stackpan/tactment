@@ -19,7 +19,7 @@ public class ErrorController {
 
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<ErrorResponse<String>> responseStatusException(ResponseStatusException exception) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        return ResponseEntity.status(exception.getStatusCode())
                 .body(ErrorResponse.<String>builder().errors(exception.getReason()).build());
     }
 

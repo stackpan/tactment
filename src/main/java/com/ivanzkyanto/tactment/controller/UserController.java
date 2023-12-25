@@ -1,6 +1,6 @@
 package com.ivanzkyanto.tactment.controller;
 
-import com.ivanzkyanto.tactment.model.request.RegisterUserRequest;
+import com.ivanzkyanto.tactment.model.request.UserRegisterRequest;
 import com.ivanzkyanto.tactment.model.response.ApiResponse;
 import com.ivanzkyanto.tactment.service.UserService;
 import lombok.AllArgsConstructor;
@@ -22,7 +22,7 @@ public class UserController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<ApiResponse<String>> register(@RequestBody RegisterUserRequest request) {
+    public ResponseEntity<ApiResponse<String>> register(@RequestBody UserRegisterRequest request) {
         userService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.<String>builder().data("Ok").build());

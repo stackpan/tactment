@@ -1,12 +1,15 @@
 package com.ivanzkyanto.tactment;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ivanzkyanto.tactment.entity.User;
-import com.ivanzkyanto.tactment.model.request.UserRegisterRequest;
+import com.ivanzkyanto.tactment.model.request.UserLoginRequest;
 import com.ivanzkyanto.tactment.model.response.ApiResponse;
+import com.ivanzkyanto.tactment.model.response.UserLoginResponse;
 import com.ivanzkyanto.tactment.repository.UserRepository;
 import com.ivanzkyanto.tactment.security.BCrypt;
 import org.hamcrest.Matchers;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,17 +22,16 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-public class UserControllerTest {
-
+public class AuthControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
     @Autowired
-    private ObjectMapper objectMapper;
+    private UserRepository userRepository;
 
     @Autowired
-    private UserRepository userRepository;
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
@@ -37,70 +39,73 @@ public class UserControllerTest {
     }
 
     @Test
-    void registerSuccess() throws Exception {
-        UserRegisterRequest request = UserRegisterRequest.builder()
-                .username("johndoe")
-                .password("password")
-                .name("John Doe")
-                .build();
-
-        mockMvc.perform(
-                MockMvcRequestBuilders.post("/api/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
-        ).andExpectAll(
-                MockMvcResultMatchers.status().isCreated(),
-                MockMvcResultMatchers.content().json(
-                        objectMapper.writeValueAsString(
-                                ApiResponse.builder().data("Ok").build()
-                        )
-                )
-        );
-    }
-
-    @Test
-    void registerBadRequest() throws Exception {
-        UserRegisterRequest request = UserRegisterRequest.builder()
-                .username("johndoe")
-                .password("")
-                .name("John Doe")
-                .build();
-
-        mockMvc.perform(
-                MockMvcRequestBuilders.post("/api/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(request))
-        ).andExpectAll(
-                MockMvcResultMatchers.status().isBadRequest(),
-                MockMvcResultMatchers.content().string(Matchers.containsString("password"))
-        );
-    }
-
-    @Test
-    void registerAlreadyRegistered() throws Exception {
+    void loginSuccess() throws Exception {
         User user = new User();
         user.setUsername("johndoe");
         user.setPassword(BCrypt.hashpw("password", BCrypt.gensalt()));
         user.setName("John Doe");
-
         userRepository.save(user);
 
-        UserRegisterRequest request = UserRegisterRequest.builder()
+        UserLoginRequest request = UserLoginRequest.builder()
                 .username("johndoe")
                 .password("password")
-                .name("John Doe")
                 .build();
 
         mockMvc.perform(
-                MockMvcRequestBuilders.post("/api/users")
+                MockMvcRequestBuilders.post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request))
         ).andExpectAll(
-                MockMvcResultMatchers.status().isBadRequest(),
-                MockMvcResultMatchers.content().string(Matchers.containsString("Username is already registered"))
+                MockMvcResultMatchers.status().isOk()
+        ).andDo(result -> {
+            ApiResponse<UserLoginResponse> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+            });
+
+            Assertions.assertNotNull(response.getData().getToken());
+            Assertions.assertNotNull(response.getData().getExpiredAt());
+        });
+    }
+
+    @Test
+    void loginUserNotFound() throws Exception {
+        UserLoginRequest request = UserLoginRequest.builder()
+                .username("johndoe")
+                .password("password")
+                .build();
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+        ).andExpectAll(
+                MockMvcResultMatchers.status().isUnauthorized(),
+                MockMvcResultMatchers.content().string(Matchers.containsString("Username or password is wrong"))
+        );
+    }
+
+    @Test
+    void loginUserWrongPassword() throws Exception {
+        User user = new User();
+        user.setUsername("johndoe");
+        user.setPassword(BCrypt.hashpw("password", BCrypt.gensalt()));
+        user.setName("John Doe");
+        userRepository.save(user);
+
+        UserLoginRequest request = UserLoginRequest.builder()
+                .username("johndoe")
+                .password("wrongpassword")
+                .build();
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+        ).andExpectAll(
+                MockMvcResultMatchers.status().isUnauthorized(),
+                MockMvcResultMatchers.content().string(Matchers.containsString("Username or password is wrong"))
         );
     }
 }
