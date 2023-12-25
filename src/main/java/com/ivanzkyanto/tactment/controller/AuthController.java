@@ -4,16 +4,18 @@ import com.ivanzkyanto.tactment.model.request.UserLoginRequest;
 import com.ivanzkyanto.tactment.model.response.ApiResponse;
 import com.ivanzkyanto.tactment.model.response.UserLoginResponse;
 import com.ivanzkyanto.tactment.service.AuthService;
-import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AuthController {
 
+    @NonNull
     private AuthService authService;
 
     @PostMapping(

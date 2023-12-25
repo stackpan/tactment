@@ -5,15 +5,17 @@ import com.ivanzkyanto.tactment.service.ValidationService;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
-import lombok.AllArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ValidationServiceImpl implements ValidationService {
 
+    @NonNull
     private Validator validator;
 
     @Override
