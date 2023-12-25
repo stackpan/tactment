@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:latest
+    restart: always
+    ports:
+      - "${DB_PORT:-3306}:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootsecret}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-tactment}
+      MYSQL_USER: ${MYSQL_USER:-user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-secret}
+
+  phpmyadmin:
+    image: phpmyadmin
+    restart: always
+    ports:
+      - "${PMA_PORT:-8090}:80"
+    depends_on:
+      - db
+    links:
+      - db:db

@@ -1,0 +1,13 @@
+package com.ivanzkyanto.tactment;
+
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class TactmentApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(TactmentApplication.class, args);
+    }
+
+}
