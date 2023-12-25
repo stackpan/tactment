@@ -2,6 +2,7 @@ package com.ivanzkyanto.tactment.service.impl;
 
 import com.ivanzkyanto.tactment.entity.User;
 import com.ivanzkyanto.tactment.model.request.UserRegisterRequest;
+import com.ivanzkyanto.tactment.model.response.UserResponse;
 import com.ivanzkyanto.tactment.repository.UserRepository;
 import com.ivanzkyanto.tactment.security.BCrypt;
 import com.ivanzkyanto.tactment.service.UserService;
@@ -35,5 +36,13 @@ public class UserServiceImpl implements UserService {
         user.setName(request.getName());
 
         userRepository.save(user);
+    }
+
+    @Override
+    public UserResponse get(User user) {
+        return UserResponse.builder()
+                .username(user.getUsername())
+                .name(user.getName())
+                .build();
     }
 }

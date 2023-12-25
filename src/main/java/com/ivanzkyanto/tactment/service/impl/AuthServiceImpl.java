@@ -34,7 +34,13 @@ public class AuthServiceImpl implements AuthService {
             throw invalidCredentialsException;
         }
 
-        return UserLoginResponse.build(Token.generate());
+        Token token = Token.generate();
+
+        user.setToken(token.getToken());
+        user.setTokenExpiredAt(token.getExpiredAt());
+        userRepository.save(user);
+
+        return UserLoginResponse.build(token);
     }
 
 }
