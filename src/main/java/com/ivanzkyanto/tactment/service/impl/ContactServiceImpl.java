@@ -70,4 +70,12 @@ public class ContactServiceImpl implements ContactService {
         Contact contact = contactRepository.findFirstByUserAndId(user, contactId).orElseThrow(() -> CONTACT_NOT_FOUND_EXCEPTION);
         return ContactResponse.build(contact);
     }
+
+    @Override
+    public void delete(User user, String contactId) {
+        Contact contact = contactRepository.findFirstByUserAndId(user, contactId)
+                .orElseThrow(() -> CONTACT_NOT_FOUND_EXCEPTION);
+
+        contactRepository.delete(contact);
+    }
 }

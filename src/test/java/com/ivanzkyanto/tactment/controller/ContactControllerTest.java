@@ -13,6 +13,7 @@ import com.ivanzkyanto.tactment.repository.ContactRepository;
 import com.ivanzkyanto.tactment.repository.UserRepository;
 import com.ivanzkyanto.tactment.security.BCrypt;
 import com.ivanzkyanto.tactment.util.Token;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +26,7 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -174,6 +174,48 @@ class ContactControllerTest {
     void getNotFound() throws Exception {
         mockMvc.perform(
                 MockMvcRequestBuilders.get("/api/contacts/randomid")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-API-TOKEN", user.getToken())
+        ).andExpectAll(
+                MockMvcResultMatchers.status().isNotFound(),
+                MockMvcResultMatchers.content().json(
+                        objectMapper.writeValueAsString(
+                                ErrorResponse.builder()
+                                        .errors("Contact not found")
+                                        .build()
+                        )
+                )
+        );
+    }
+
+    @Test
+    void deleteSuccess() throws Exception {
+        Contact contact = new Contact();
+        contact.setId("contact-" + UUID.randomUUID());
+        contact.setUser(user);
+        contact.setFirstName("Juleus");
+        contact.setLastName("Caesar");
+        contact.setEmail("juleus.caesar@example.com");
+        contact.setPhone("081234567890");
+
+        contactRepository.save(contact);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.delete("/api/contacts/" + contact.getId())
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-API-TOKEN", user.getToken())
+        ).andExpectAll(
+                MockMvcResultMatchers.status().isOk(),
+                MockMvcResultMatchers.jsonPath("data", Matchers.equalTo("Ok"))
+        );
+
+        assertNull(contactRepository.findById(contact.getId()).orElse(null));
+    }
+
+    @Test
+    void deleteNotFound() throws Exception {
+        mockMvc.perform(
+                MockMvcRequestBuilders.delete("/api/contacts/fictionalId")
                         .accept(MediaType.APPLICATION_JSON)
                         .header("X-API-TOKEN", user.getToken())
         ).andExpectAll(

@@ -42,10 +42,7 @@ public class AuthController {
         return ApiResponse.<String>builder().data("Password reset successfully").build();
     }
 
-    @PostMapping(
-            path = "/api/auth/logout",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
+    @PostMapping(path = "/api/auth/logout", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiResponse<String> logout(@Auth User user) {
         authService.logout(user);
         return ApiResponse.<String>builder().data("Ok").build();

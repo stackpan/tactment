@@ -13,4 +13,6 @@ public interface ContactService {
 
     ContactResponse get(User user, String contactId);
 
+    void delete(User user, String contactId);
+
 }

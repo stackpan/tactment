@@ -32,10 +32,7 @@ public class UserController {
                 .body(ApiResponse.<String>builder().data("Ok").build());
     }
 
-    @GetMapping(
-            path = "/api/users/current",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
+    @GetMapping(path = "/api/users/current", produces = MediaType.APPLICATION_JSON_VALUE)
     public ApiResponse<UserResponse> getCurrent(@Auth User user) {
         UserResponse response = userService.get(user);
         return ApiResponse.<UserResponse>builder().data(response).build();

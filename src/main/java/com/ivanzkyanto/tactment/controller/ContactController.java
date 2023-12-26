@@ -43,16 +43,16 @@ public class ContactController {
         return ApiResponse.<ContactResponse>builder().data(response).build();
     }
 
-    @GetMapping(
-            path = "/api/contacts/{contactId}",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    public ApiResponse<ContactResponse> get(
-            @Auth User user,
-            @PathVariable("contactId") String contactId
-    ) {
+    @GetMapping(path = "/api/contacts/{contactId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiResponse<ContactResponse> get(@Auth User user, @PathVariable("contactId") String contactId) {
         ContactResponse response = contactService.get(user, contactId);
         return ApiResponse.<ContactResponse>builder().data(response).build();
+    }
+
+    @DeleteMapping(path = "/api/contacts/{contactId}", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ApiResponse<String> delete(@Auth User user, @PathVariable("contactId") String contactId) {
+        contactService.delete(user, contactId);
+        return ApiResponse.<String>builder().data("Ok").build();
     }
 
 }
