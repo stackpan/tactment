@@ -14,4 +14,6 @@ public interface ContactService {
     @Transactional
     ContactResponse update(User user, String contactId, ContactUpdateRequest request);
 
+    ContactResponse get(User user, String contactId);
+
 }

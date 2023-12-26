@@ -26,6 +26,8 @@ public class ContactServiceImpl implements ContactService {
     @NonNull
     private ValidationService validationService;
 
+    private final ResponseStatusException CONTACT_NOT_FOUND_EXCEPTION = new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found");
+
     @Override
     public ContactResponse create(User user, ContactCreateRequest request) {
         validationService.validate(request);
@@ -48,7 +50,7 @@ public class ContactServiceImpl implements ContactService {
         validationService.validate(request);
 
         Contact contact = contactRepository.findFirstByUserAndId(user, contactId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found"));
+                .orElseThrow(() -> CONTACT_NOT_FOUND_EXCEPTION);
 
         contact.setFirstName(request.getFirstName());
         contact.setLastName(request.getLastName());
@@ -57,6 +59,12 @@ public class ContactServiceImpl implements ContactService {
 
         contactRepository.save(contact);
 
+        return ContactResponse.build(contact);
+    }
+
+    @Override
+    public ContactResponse get(User user, String contactId) {
+        Contact contact = contactRepository.findFirstByUserAndId(user, contactId).orElseThrow(() -> CONTACT_NOT_FOUND_EXCEPTION);
         return ContactResponse.build(contact);
     }
 }

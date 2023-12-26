@@ -42,4 +42,17 @@ public class ContactController {
         ContactResponse response = contactService.update(user, contactId, request);
         return ApiResponse.<ContactResponse>builder().data(response).build();
     }
+
+    @GetMapping(
+            path = "/api/contacts/{contactId}",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ApiResponse<ContactResponse> get(
+            @Auth User user,
+            @PathVariable("contactId") String contactId
+    ) {
+        ContactResponse response = contactService.get(user, contactId);
+        return ApiResponse.<ContactResponse>builder().data(response).build();
+    }
+
 }
