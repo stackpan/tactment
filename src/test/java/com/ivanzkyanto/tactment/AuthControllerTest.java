@@ -248,4 +248,49 @@ public class AuthControllerTest {
                         ))
         );
     }
+
+    @Test
+    void logoutSuccess() throws Exception {
+        User user = new User();
+        user.setUsername("johndoe");
+        user.setPassword(BCrypt.hashpw("password", BCrypt.gensalt()));
+        user.setName("John Doe");
+
+        userRepository.save(user);
+
+        UserLoginRequest loginRequest = UserLoginRequest.builder()
+                .username("johndoe")
+                .password("password")
+                .build();
+
+        MvcResult loginMvcResult = mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest))
+        ).andReturn();
+
+        ApiResponse<UserLoginResponse> loginResponse = objectMapper.readValue(loginMvcResult.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/auth/logout")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .header("X-API-TOKEN", loginResponse.getData().getToken())
+        ).andExpectAll(
+                MockMvcResultMatchers.status().isOk(),
+                MockMvcResultMatchers.content()
+                        .json(objectMapper.writeValueAsString(
+                                ApiResponse.builder().data("Ok").build()))
+        );
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/users/current")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-API-TOKEN", loginResponse.getData().getToken())
+        ).andExpectAll(
+                MockMvcResultMatchers.status().isUnauthorized(),
+                MockMvcResultMatchers.content().string(Matchers.containsString("Unauthorized"))
+        );
+    }
 }

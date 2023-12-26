@@ -64,4 +64,13 @@ public class AuthServiceImpl implements AuthService {
         user.setPassword(BCrypt.hashpw(request.getNewPassword(), BCrypt.gensalt()));
     }
 
+    @Override
+    @Transactional
+    public void logout(User user) {
+        user.setToken(null);
+        user.setTokenExpiredAt(null);
+
+        userRepository.save(user);
+    }
+
 }
