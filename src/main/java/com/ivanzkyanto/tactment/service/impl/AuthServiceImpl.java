@@ -1,6 +1,7 @@
 package com.ivanzkyanto.tactment.service.impl;
 
 import com.ivanzkyanto.tactment.entity.User;
+import com.ivanzkyanto.tactment.model.request.ResetPasswordRequest;
 import com.ivanzkyanto.tactment.util.Token;
 import com.ivanzkyanto.tactment.model.request.UserLoginRequest;
 import com.ivanzkyanto.tactment.model.response.UserLoginResponse;
@@ -8,6 +9,7 @@ import com.ivanzkyanto.tactment.repository.UserRepository;
 import com.ivanzkyanto.tactment.security.BCrypt;
 import com.ivanzkyanto.tactment.service.AuthService;
 import com.ivanzkyanto.tactment.service.ValidationService;
+import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -44,6 +46,21 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
 
         return UserLoginResponse.build(token);
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(User user, ResetPasswordRequest request) {
+        validationService.validate(request);
+
+        boolean passwordMatch = BCrypt.checkpw(request.getOldPassword(), user.getPassword());
+        boolean passwordConfirmed = request.getNewPasswordConfirmation().equals(request.getNewPassword());
+
+        if (!passwordMatch || !passwordConfirmed) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Wrong password");
+        }
+
+        user.setPassword(BCrypt.hashpw(request.getNewPassword(), BCrypt.gensalt()));
     }
 
 }

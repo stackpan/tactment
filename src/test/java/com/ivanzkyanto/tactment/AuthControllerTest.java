@@ -3,8 +3,10 @@ package com.ivanzkyanto.tactment;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ivanzkyanto.tactment.entity.User;
+import com.ivanzkyanto.tactment.model.request.ResetPasswordRequest;
 import com.ivanzkyanto.tactment.model.request.UserLoginRequest;
 import com.ivanzkyanto.tactment.model.response.ApiResponse;
+import com.ivanzkyanto.tactment.model.response.ErrorResponse;
 import com.ivanzkyanto.tactment.model.response.UserLoginResponse;
 import com.ivanzkyanto.tactment.repository.UserRepository;
 import com.ivanzkyanto.tactment.security.BCrypt;
@@ -17,6 +19,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
@@ -106,6 +109,143 @@ public class AuthControllerTest {
         ).andExpectAll(
                 MockMvcResultMatchers.status().isUnauthorized(),
                 MockMvcResultMatchers.content().string(Matchers.containsString("Username or password is wrong"))
+        );
+    }
+
+    @Test
+    void resetPasswordSuccess() throws Exception {
+        User user = new User();
+        user.setUsername("johndoe");
+        user.setPassword(BCrypt.hashpw("password", BCrypt.gensalt()));
+        user.setName("John Doe");
+
+        userRepository.save(user);
+
+        UserLoginRequest loginRequest = UserLoginRequest.builder()
+                .username("johndoe")
+                .password("password")
+                .build();
+
+        MvcResult loginMvcResult = mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest))
+        ).andReturn();
+
+        ApiResponse<UserLoginResponse> loginResponse = objectMapper.readValue(loginMvcResult.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        ResetPasswordRequest resetPasswordRequest = ResetPasswordRequest.builder()
+                .oldPassword("password")
+                .newPassword("newpassword")
+                .newPasswordConfirmation("newpassword")
+                .build();
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.patch("/api/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-API-TOKEN", loginResponse.getData().getToken())
+                        .content(objectMapper.writeValueAsString(resetPasswordRequest))
+        ).andExpectAll(
+                MockMvcResultMatchers.status().isOk(),
+                MockMvcResultMatchers.content()
+                        .json(objectMapper.writeValueAsString(
+                                ApiResponse.builder().data("Password reset successfully").build()))
+        );
+    }
+
+    @Test
+    void resetPasswordWrongPassword() throws Exception {
+        User user = new User();
+        user.setUsername("johndoe");
+        user.setPassword(BCrypt.hashpw("password", BCrypt.gensalt()));
+        user.setName("John Doe");
+
+        userRepository.save(user);
+
+        UserLoginRequest loginRequest = UserLoginRequest.builder()
+                .username("johndoe")
+                .password("password")
+                .build();
+
+        MvcResult loginMvcResult = mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest))
+        ).andReturn();
+
+        ApiResponse<UserLoginResponse> loginResponse = objectMapper.readValue(loginMvcResult.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        ResetPasswordRequest resetPasswordRequest = ResetPasswordRequest.builder()
+                .oldPassword("wrongpassword")
+                .newPassword("newpassword")
+                .newPasswordConfirmation("newpassword")
+                .build();
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.patch("/api/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-API-TOKEN", loginResponse.getData().getToken())
+                        .content(objectMapper.writeValueAsString(resetPasswordRequest))
+        ).andExpectAll(
+                MockMvcResultMatchers.status().isUnauthorized(),
+                MockMvcResultMatchers.content()
+                        .json(objectMapper.writeValueAsString(
+                                ErrorResponse.builder()
+                                        .errors("Wrong password")
+                                        .build()))
+        );
+    }
+
+    @Test
+    void resetPasswordNotConfirmed() throws Exception {
+        User user = new User();
+        user.setUsername("johndoe");
+        user.setPassword(BCrypt.hashpw("password", BCrypt.gensalt()));
+        user.setName("John Doe");
+
+        userRepository.save(user);
+
+        UserLoginRequest loginRequest = UserLoginRequest.builder()
+                .username("johndoe")
+                .password("password")
+                .build();
+
+        MvcResult loginMvcResult = mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest))
+        ).andReturn();
+
+        ApiResponse<UserLoginResponse> loginResponse = objectMapper.readValue(loginMvcResult.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        ResetPasswordRequest resetPasswordRequest = ResetPasswordRequest.builder()
+                .oldPassword("password")
+                .newPassword("newpassword")
+                .newPasswordConfirmation("wrongpassword")
+                .build();
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.patch("/api/auth/reset-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-API-TOKEN", loginResponse.getData().getToken())
+                        .content(objectMapper.writeValueAsString(resetPasswordRequest))
+        ).andExpectAll(
+                MockMvcResultMatchers.status().isUnauthorized(),
+                MockMvcResultMatchers.content()
+                        .json(objectMapper.writeValueAsString(
+                                ErrorResponse.builder()
+                                        .errors("Wrong password")
+                                        .build()
+                        ))
         );
     }
 }
