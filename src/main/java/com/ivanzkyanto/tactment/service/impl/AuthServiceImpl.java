@@ -29,6 +29,7 @@ public class AuthServiceImpl implements AuthService {
     private final ResponseStatusException INVALID_CREDENTIALS_EXCEPTION = new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Username or password is wrong");
 
     @Override
+    @Transactional
     public UserLoginResponse login(UserLoginRequest request) {
         validationService.validate(request);
 
