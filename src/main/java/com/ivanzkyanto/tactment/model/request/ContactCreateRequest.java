@@ -17,15 +17,12 @@ public class ContactCreateRequest implements Request {
     @Size(max = 100)
     private String firstName;
 
-    @NotBlank
     @Size(max = 100)
     private String lastName;
 
-    @NotBlank
     @Size(max = 100)
     private String email;
 
-    @NotBlank
     @Size(max = 100)
     private String phone;
 

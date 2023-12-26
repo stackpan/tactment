@@ -8,6 +8,7 @@ import com.ivanzkyanto.tactment.model.response.ContactResponse;
 import com.ivanzkyanto.tactment.repository.ContactRepository;
 import com.ivanzkyanto.tactment.service.ContactService;
 import com.ivanzkyanto.tactment.service.ValidationService;
+import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -29,6 +30,7 @@ public class ContactServiceImpl implements ContactService {
     private final ResponseStatusException CONTACT_NOT_FOUND_EXCEPTION = new ResponseStatusException(HttpStatus.NOT_FOUND, "Contact not found");
 
     @Override
+    @Transactional
     public ContactResponse create(User user, ContactCreateRequest request) {
         validationService.validate(request);
 
@@ -46,6 +48,7 @@ public class ContactServiceImpl implements ContactService {
     }
 
     @Override
+    @Transactional
     public ContactResponse update(User user, String contactId, ContactUpdateRequest request) {
         validationService.validate(request);
 

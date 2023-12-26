@@ -7,3 +7,36 @@ Accept: application/json
   "password": "rahasia",
   "name": "Ivan Rizkyanto"
 }
+
+###
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{
+  "username": "Ivanzkyanto",
+  "password": "rahasia"
+}
+
+###
+POST http://localhost:8080/api/contacts
+Content-Type: application/json
+Accept: application/json
+X-API-TOKEN: 9427b56c-4a9b-435c-b780-83fa919b3db1
+
+{
+  "firstName": "Susan",
+  "phone": "081234567891"
+}
+
+###
+PUT http://localhost:8080/api/contacts/contact-73672b56-51ec-457a-bebb-2cdac17e8908
+Content-Type: application/json
+Accept: application/json
+X-API-TOKEN: 9427b56c-4a9b-435c-b780-83fa919b3db1
+
+{
+  "firstName": "Susan",
+  "email": "susan21@example.com",
+  "phone": "0000"
+}
