@@ -8,11 +8,11 @@ import com.ivanzkyanto.tactment.repository.UserRepository;
 import com.ivanzkyanto.tactment.security.BCrypt;
 import com.ivanzkyanto.tactment.service.UserService;
 import com.ivanzkyanto.tactment.service.ValidationService;
-import jakarta.transaction.Transactional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 @Service
