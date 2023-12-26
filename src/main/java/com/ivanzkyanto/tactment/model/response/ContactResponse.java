@@ -1,5 +1,6 @@
 package com.ivanzkyanto.tactment.model.response;
 
+import com.ivanzkyanto.tactment.entity.Contact;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -21,4 +22,13 @@ public class ContactResponse {
 
     private String phone;
 
+    public static ContactResponse build(Contact contact) {
+        return ContactResponse.builder()
+                .id(contact.getId())
+                .firstName(contact.getFirstName())
+                .lastName(contact.getLastName())
+                .email(contact.getEmail())
+                .phone(contact.getPhone())
+                .build();
+    }
 }
