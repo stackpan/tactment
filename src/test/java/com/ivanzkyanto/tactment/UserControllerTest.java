@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ivanzkyanto.tactment.entity.User;
 import com.ivanzkyanto.tactment.model.request.UserLoginRequest;
 import com.ivanzkyanto.tactment.model.request.UserRegisterRequest;
+import com.ivanzkyanto.tactment.model.request.UserUpdateRequest;
 import com.ivanzkyanto.tactment.model.response.ApiResponse;
 import com.ivanzkyanto.tactment.model.response.UserLoginResponse;
 import com.ivanzkyanto.tactment.model.response.UserResponse;
@@ -214,5 +215,50 @@ public class UserControllerTest {
                 MockMvcResultMatchers.status().isUnauthorized(),
                 MockMvcResultMatchers.content().string(Matchers.containsString("Unauthorized"))
         );
+    }
+
+    @Test
+    void updateSuccess() throws Exception {
+        User user = new User();
+        user.setUsername("johndoe");
+        user.setPassword(BCrypt.hashpw("password", BCrypt.gensalt()));
+        user.setName("John Doe");
+
+        userRepository.save(user);
+
+        UserLoginRequest loginRequest = UserLoginRequest.builder()
+                .username("johndoe")
+                .password("password")
+                .build();
+
+        MvcResult loginMvcResult = mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginRequest))
+        ).andReturn();
+
+        ApiResponse<UserLoginResponse> loginResponse = objectMapper.readValue(loginMvcResult.getResponse().getContentAsString(), new TypeReference<>() {
+        });
+
+        UserUpdateRequest updateRequest = UserUpdateRequest.builder()
+                .name("Doe John")
+                .build();
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.put("/api/users/current")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-API-TOKEN", loginResponse.getData().getToken())
+                        .content(objectMapper.writeValueAsString(updateRequest))
+        ).andExpectAll(
+                MockMvcResultMatchers.status().isOk()
+        ).andDo(result -> {
+            ApiResponse<UserResponse> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+            });
+
+            Assertions.assertEquals("johndoe", response.getData().getUsername());
+            Assertions.assertEquals("Doe John", response.getData().getName());
+        });
     }
 }
