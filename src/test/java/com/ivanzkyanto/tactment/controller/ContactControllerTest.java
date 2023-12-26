@@ -13,6 +13,7 @@ import com.ivanzkyanto.tactment.repository.ContactRepository;
 import com.ivanzkyanto.tactment.repository.UserRepository;
 import com.ivanzkyanto.tactment.security.BCrypt;
 import com.ivanzkyanto.tactment.util.Token;
+import lombok.extern.slf4j.Slf4j;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,6 +22,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
@@ -30,6 +32,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@Slf4j
 class ContactControllerTest {
 
     @Autowired
@@ -79,7 +82,7 @@ class ContactControllerTest {
                         .header("X-API-TOKEN", user.getToken())
                         .content(objectMapper.writeValueAsString(request))
         ).andExpectAll(
-                MockMvcResultMatchers.status().isOk()
+                MockMvcResultMatchers.status().isCreated()
         ).andDo(result -> {
             ApiResponse<ContactResponse> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
             });
@@ -186,6 +189,31 @@ class ContactControllerTest {
                         )
                 )
         );
+    }
+
+    @Test
+    void search() throws Exception {
+        for (int i = 1; i <= 15; i++) {
+            Contact contact = new Contact();
+            contact.setId("contact-" + UUID.randomUUID());
+            contact.setUser(user);
+            contact.setFirstName("Juleus");
+            contact.setLastName("Caesar" + i);
+            contact.setEmail("juleus.caesar." + i + "@example.com");
+            contact.setPhone("081234567890");
+
+            contactRepository.save(contact);
+        }
+
+        MvcResult result = mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/contacts?name=Juleus")
+                        .accept(MediaType.APPLICATION_JSON)
+                        .header("X-API-TOKEN", user.getToken())
+        ).andExpectAll(
+                MockMvcResultMatchers.status().isOk()
+        ).andReturn();
+
+        log.info(result.getResponse().getContentAsString());
     }
 
     @Test

@@ -11,7 +11,6 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -26,10 +25,10 @@ public class UserController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public ResponseEntity<ApiResponse<String>> register(@RequestBody UserRegisterRequest request) {
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<String> register(@RequestBody UserRegisterRequest request) {
         userService.register(request);
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.<String>builder().data("Ok").build());
+        return ApiResponse.<String>builder().data("Ok").build();
     }
 
     @GetMapping(path = "/api/users/current", produces = MediaType.APPLICATION_JSON_VALUE)

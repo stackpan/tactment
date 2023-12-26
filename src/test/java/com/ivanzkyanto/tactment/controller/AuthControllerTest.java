@@ -8,6 +8,7 @@ import com.ivanzkyanto.tactment.model.request.UserLoginRequest;
 import com.ivanzkyanto.tactment.model.response.ApiResponse;
 import com.ivanzkyanto.tactment.model.response.ErrorResponse;
 import com.ivanzkyanto.tactment.model.response.UserLoginResponse;
+import com.ivanzkyanto.tactment.repository.ContactRepository;
 import com.ivanzkyanto.tactment.repository.UserRepository;
 import com.ivanzkyanto.tactment.security.BCrypt;
 import org.hamcrest.Matchers;
@@ -34,10 +35,14 @@ public class AuthControllerTest {
     private UserRepository userRepository;
 
     @Autowired
+    private ContactRepository contactRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
+        contactRepository.deleteAll();
         userRepository.deleteAll();
     }
 
