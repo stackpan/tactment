@@ -112,6 +112,25 @@ class AddressControllerTest {
     }
 
     @Test
+    void createContactNotFound() throws Exception {
+        AddressCreateRequest request = AddressCreateRequest.builder()
+                .country("Indonesia")
+                .street("Jalan yang benar")
+                .build();
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.post("/api/contacts/fictionalid/addresses")
+                        .header("X-API-TOKEN", user.getToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+        ).andExpectAll(
+                MockMvcResultMatchers.status().isNotFound(),
+                MockMvcResultMatchers.jsonPath("errors", Matchers.equalTo("Contact not found"))
+        );
+    }
+
+    @Test
     void update() throws Exception {
         Address address = new Address();
         address.setId("address-" + UUID.randomUUID());
@@ -149,6 +168,34 @@ class AddressControllerTest {
             assertNull(response.getData().getProvince());
             assertNull(response.getData().getPostalCode());
         });
+    }
+
+    @Test
+    void updateAddressNotFound() throws Exception {
+        Address address = new Address();
+        address.setId("address-" + UUID.randomUUID());
+        address.setCountry("Indonesia");
+        address.setStreet("Jalan yang benar");
+        address.setContact(contact);
+
+        AddressUpdateRequest request = AddressUpdateRequest.builder()
+                .street("Jalan yang salah")
+                .city(address.getCity())
+                .province(address.getProvince())
+                .country(address.getCountry())
+                .postalCode(address.getPostalCode())
+                .build();
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.put("/api/contacts/" + contact.getId() + "/addresses/" + address.getId())
+                        .header("X-API-TOKEN", user.getToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+        ).andExpectAll(
+                MockMvcResultMatchers.status().isNotFound(),
+                MockMvcResultMatchers.jsonPath("errors", Matchers.equalTo("Address not found"))
+        );
     }
 
     @Test
