@@ -72,4 +72,20 @@ public class AddressController {
                 .build();
     }
 
+    @DeleteMapping(
+            path = "/api/contacts/{contactId}/addresses/{addressId}",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ApiResponse<String> delete(
+            @Auth User user,
+            @PathVariable("contactId") String contactId,
+            @PathVariable("addressId") String addressId
+    ) {
+        addressService.delete(user, contactId, addressId);
+
+        return ApiResponse.<String>builder()
+                .data("Ok")
+                .build();
+    }
+
 }

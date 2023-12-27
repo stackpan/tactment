@@ -191,4 +191,26 @@ class AddressControllerTest {
                 MockMvcResultMatchers.jsonPath("errors", Matchers.equalTo("Address not found"))
         );
     }
+
+    @Test
+    void delete() throws Exception {
+        Address address = new Address();
+        address.setId("address-" + UUID.randomUUID());
+        address.setCountry("Indonesia");
+        address.setStreet("Jalan yang benar");
+        address.setContact(contact);
+
+        addressRepository.save(address);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.delete("/api/contacts/" + contact.getId() + "/addresses/" + address.getId())
+                        .header("X-API-TOKEN", user.getToken())
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpectAll(
+                MockMvcResultMatchers.status().isOk(),
+                MockMvcResultMatchers.jsonPath("data", Matchers.equalTo("Ok"))
+        );
+
+        assertFalse(addressRepository.existsById(address.getId()));
+    }
 }

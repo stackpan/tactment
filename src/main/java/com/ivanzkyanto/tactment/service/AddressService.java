@@ -13,4 +13,6 @@ public interface AddressService {
 
     AddressResponse get(User user, String contactId, String addressId);
 
+    void delete(User user, String contactId, String addressId);
+
 }

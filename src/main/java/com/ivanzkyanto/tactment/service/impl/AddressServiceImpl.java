@@ -86,4 +86,15 @@ public class AddressServiceImpl implements AddressService {
 
         return AddressResponse.build(address);
     }
+
+    @Override
+    public void delete(User user, String contactId, String addressId) {
+        Contact contact = contactRepository.findFirstByUserAndId(user, contactId)
+                .orElseThrow(ContactNotFoundException::new);
+
+        Address address = addressRepository.findFirstByContactAndId(contact, addressId)
+                .orElseThrow(AddressNotFoundException::new);
+
+        addressRepository.delete(address);
+    }
 }
