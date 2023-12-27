@@ -14,6 +14,7 @@ import com.ivanzkyanto.tactment.repository.ContactRepository;
 import com.ivanzkyanto.tactment.repository.UserRepository;
 import com.ivanzkyanto.tactment.security.BCrypt;
 import com.ivanzkyanto.tactment.util.Token;
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -147,5 +148,47 @@ class AddressControllerTest {
             assertNull(response.getData().getProvince());
             assertNull(response.getData().getPostalCode());
         });
+    }
+
+    @Test
+    void get() throws Exception {
+        Address address = new Address();
+        address.setId("address-" + UUID.randomUUID());
+        address.setCountry("Indonesia");
+        address.setStreet("Jalan yang benar");
+        address.setContact(contact);
+
+        addressRepository.save(address);
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/contacts/" + contact.getId() + "/addresses/" + address.getId())
+                        .header("X-API-TOKEN", user.getToken())
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpectAll(
+                MockMvcResultMatchers.status().isOk()
+        ).andDo(result -> {
+            ApiResponse<AddressResponse> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+            });
+
+            assertNotNull(response.getData());
+            assertEquals(address.getId(), response.getData().getId());
+            assertEquals(address.getCountry(), response.getData().getCountry());
+            assertEquals(address.getStreet(), response.getData().getStreet());
+            assertNull(response.getData().getCity());
+            assertNull(response.getData().getProvince());
+            assertNull(response.getData().getPostalCode());
+        });
+    }
+
+    @Test
+    void getNotFound() throws Exception {
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/contacts/" + contact.getId() + "/addresses/fictional-id")
+                        .header("X-API-TOKEN", user.getToken())
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpectAll(
+                MockMvcResultMatchers.status().isNotFound(),
+                MockMvcResultMatchers.jsonPath("errors", Matchers.equalTo("Address not found"))
+        );
     }
 }

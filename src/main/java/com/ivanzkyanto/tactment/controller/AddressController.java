@@ -56,4 +56,20 @@ public class AddressController {
                 .build();
     }
 
+    @GetMapping(
+            path = "/api/contacts/{contactId}/addresses/{addressId}",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ApiResponse<AddressResponse> update(
+            @Auth User user,
+            @PathVariable("contactId") String contactId,
+            @PathVariable("addressId") String addressId
+    ) {
+        AddressResponse response = addressService.get(user, contactId, addressId);
+
+        return ApiResponse.<AddressResponse>builder()
+                .data(response)
+                .build();
+    }
+
 }
