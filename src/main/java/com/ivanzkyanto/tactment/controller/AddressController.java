@@ -14,12 +14,29 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequiredArgsConstructor
 public class AddressController {
 
     @NonNull
     private AddressService addressService;
+
+    @GetMapping(
+            path = "/api/contacts/{contactId}/addresses",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ApiResponse<List<AddressResponse>> list(
+            @Auth User user,
+            @PathVariable("contactId") String contactId
+    ) {
+        List<AddressResponse> response = addressService.list(user, contactId);
+
+        return ApiResponse.<List<AddressResponse>>builder()
+                .data(response)
+                .build();
+    }
 
     @PostMapping(
             path = "/api/contacts/{contactId}/addresses",

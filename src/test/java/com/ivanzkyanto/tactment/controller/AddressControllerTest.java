@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -212,5 +213,32 @@ class AddressControllerTest {
         );
 
         assertFalse(addressRepository.existsById(address.getId()));
+    }
+
+    @Test
+    void list() throws Exception {
+        for (int i = 1; i <= 3; i++) {
+            Address address = new Address();
+            address.setId("address-" + UUID.randomUUID());
+            address.setCountry("Negara " + i);
+            address.setStreet("Jalan no." + i);
+            address.setContact(contact);
+
+            addressRepository.save(address);
+        }
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.get("/api/contacts/" + contact.getId() + "/addresses")
+                        .header("X-API-TOKEN", user.getToken())
+                        .accept(MediaType.APPLICATION_JSON)
+        ).andExpectAll(
+                MockMvcResultMatchers.status().isOk()
+        ).andDo(result -> {
+            ApiResponse<List<AddressResponse>> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+            });
+
+            assertNotNull(response.getData());
+            assertEquals(3, response.getData().size());
+        });
     }
 }

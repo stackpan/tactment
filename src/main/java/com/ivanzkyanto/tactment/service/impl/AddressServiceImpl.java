@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -31,6 +32,16 @@ public class AddressServiceImpl implements AddressService {
 
     @NonNull
     private ContactRepository contactRepository;
+
+    @Override
+    public List<AddressResponse> list(User user, String contactId) {
+        Contact contact = contactRepository.findFirstByUserAndId(user, contactId)
+                .orElseThrow(ContactNotFoundException::new);
+
+        List<Address> addresses = addressRepository.findAllByContact(contact);
+
+        return addresses.stream().map(AddressResponse::build).toList();
+    }
 
     @Override
     @Transactional
@@ -88,6 +99,7 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
+    @Transactional
     public void delete(User user, String contactId, String addressId) {
         Contact contact = contactRepository.findFirstByUserAndId(user, contactId)
                 .orElseThrow(ContactNotFoundException::new);
