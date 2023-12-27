@@ -2,9 +2,11 @@ package com.ivanzkyanto.tactment.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ivanzkyanto.tactment.entity.Address;
 import com.ivanzkyanto.tactment.entity.Contact;
 import com.ivanzkyanto.tactment.entity.User;
 import com.ivanzkyanto.tactment.model.request.AddressCreateRequest;
+import com.ivanzkyanto.tactment.model.request.AddressUpdateRequest;
 import com.ivanzkyanto.tactment.model.response.AddressResponse;
 import com.ivanzkyanto.tactment.model.response.ApiResponse;
 import com.ivanzkyanto.tactment.repository.AddressRepository;
@@ -104,6 +106,46 @@ class AddressControllerTest {
             assertNull(response.getData().getPostalCode());
 
             assertTrue(addressRepository.existsById(response.getData().getId()));
+        });
+    }
+
+    @Test
+    void update() throws Exception {
+        Address address = new Address();
+        address.setId("address-" + UUID.randomUUID());
+        address.setCountry("Indonesia");
+        address.setStreet("Jalan yang benar");
+        address.setContact(contact);
+        
+        addressRepository.save(address);
+        
+        AddressUpdateRequest request = AddressUpdateRequest.builder()
+                .street("Jalan yang salah")
+                .city(address.getCity())
+                .province(address.getProvince())
+                .country(address.getCountry())
+                .postalCode(address.getPostalCode())
+                .build();
+
+        mockMvc.perform(
+                MockMvcRequestBuilders.put("/api/contacts/" + contact.getId() + "/addresses/" + address.getId())
+                        .header("X-API-TOKEN", user.getToken())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request))
+        ).andExpectAll(
+                MockMvcResultMatchers.status().isOk()
+        ).andDo(result -> {
+            ApiResponse<AddressResponse> response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {
+            });
+
+            assertNotNull(response.getData());
+            assertEquals(address.getId(), response.getData().getId());
+            assertEquals(request.getCountry(), response.getData().getCountry());
+            assertEquals(request.getStreet(), response.getData().getStreet());
+            assertNull(response.getData().getCity());
+            assertNull(response.getData().getProvince());
+            assertNull(response.getData().getPostalCode());
         });
     }
 }
